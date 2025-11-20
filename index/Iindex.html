@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión Académica</title>
+    <!-- CSS en línea para un único archivo, con un diseño moderno --><style>
+        :root {
+            --primary-color: #4f46e5; /* Indigo (Mantenido para otros elementos) */
+            --secondary-color: #10b981; /* Green/Admin */
+            --docente-color: #3b82f6; /* Blue/Docente */
+            --estudiante-color: #f59e0b; /* Amber/Estudiante */
+            --danger-color: #ef4444; /* Red */
+            --bg-color: #f3f4f6; /* Fondo claro general */
+            --card-bg: rgba(255, 255, 255, 0.95); /* Blanco con ligera transparencia */
+            --welcome-card-color: rgba(167, 243, 208, 0.9); 
+            --text-color: #1f2937;
+            --mustard-color: #D97706; /* Mostaza (Amber 700) - Usado en Nav */
+            --guindo-color: #880000; /* Guindo/Maroon */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            background-color: var(--bg-color); 
+        }
+
+        main::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: transparent; 
+            z-index: -1;
+        }
+        
+        /* Nav Bar - Fondo Mostaza y texto blanco */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--mustard-color); 
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
+            position: relative; 
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white; 
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 1.5rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: white; 
+            font-weight: 500;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.2); 
+            color: white;
+        }
+
+        /* Main Content */
+        main {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; 
+            min-height: calc(100vh - 65px); 
+            position: relative;
+        }
+
+        .content-card {
+            background-color: var(--welcome-card-color); 
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .welcome-background {
+            background-color: transparent !important; 
+            /* Se asume que 'transferir.jpg' es una imagen cargada. Se usa color de fallback. */
+            background-image: url('transferir.jpg'); 
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+            color: white; 
+            text-shadow: 0px 0px 8px rgba(0, 0, 0, 0.9); 
+            overflow: hidden; 
+            min-height: 600px; 
+            padding: 2rem;
+            border-radius: 1rem;
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        
+        .welcome-background::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(59, 130, 246, 0.3); 
+            z-index: 1; 
+        }
+
+        .welcome-background > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .dashboard-container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 2rem;
+            background-color: var(--card-bg); 
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            min-height: 500px; 
+            text-align: left; 
+        }
+
+        /* Sidebar para la vista de Estudiante */
+        .sidebar {
+            width: 250px;
+            background-color: #f9fafb; 
+            padding: 1rem 0;
+            border-right: 1px solid #e5e7eb;
+            border-radius: 1rem 0 0 1rem;
+        }
+
+        .sidebar-header {
+            font-size: 1.25rem;
+            font-weight: 700;
+            padding: 0 1rem 0.75rem;
+            color: var(--estudiante-color);
+            border-bottom: 2px solid var(--estudiante-color);
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background-color: #fffbeb; /* Amber 50 */
+            color: var(--estudiante-color);
+            border-left: 4px solid var(--estudiante-color);
+        }
+
+        .dashboard-main-content {
+            flex-grow: 1;
+            padding: 2rem;
+            width: 100%; /* Asegurar que el contenido crezca */
+        }
+
+        /* Contenedor principal de los Dashboards */
+        .dashboard-view {
+            width: 100%;
+            max-width: 1000px; /* Ampliado para tablas grandes */
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: white; 
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Estilos generales de tabla */
+        .academic-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            text-align: left;
+            overflow: hidden;
+            margin-top: 1.5rem;
+        }
+
+        .academic-table th, .academic-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: middle; 
+            text-align: center;
+        }
+        
+        /* Campo de entrada de notas (Solo para Docentes) */
+        .academic-table input[type="number"] {
+            width: 60px;
+            padding: 0.4rem;
+            border: 1px solid #ccc;
+            border-radius: 0.375rem;
+            text-align: center;
+            font-weight: 500;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .academic-table input[type="number"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+            outline: none;
+        }
+
+        /* Alineación izquierda para nombre y código */
+        .academic-table th:first-child, .academic-table td:first-child,
+        .academic-table th:nth-child(2), .academic-table td:nth-child(2) {
+             text-align: left;
+        }
+        /* Para la tabla de estudiante, el primero es Materia */
+        .estudiante-table th:first-child, .estudiante-table td:first-child {
+             text-align: left;
+        }
+
+
+        .academic-table th {
+            background-color: var(--docente-color);
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+        
+        /* Estilos específicos para la tabla de notas del estudiante */
+        .estudiante-table th {
+             background-color: var(--estudiante-color);
+        }
+        
+        .estudiante-table tr:hover td {
+            background-color: #fffbeb; /* Amber 50 */
+        }
+        
+        .academic-table tbody tr:hover td {
+            background-color: #f3f8ff; 
+        }
+        
+        .materia-table {
+            max-width: 800px; /* Estilo específico para la lista inicial de materias */
+            margin: 2rem auto;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .materia-table th:first-child { border-radius: 0.75rem 0 0 0; }
+        .materia-table th:last-child { border-radius: 0 0.75rem 0 0; }
+
+        .materia-action-button, #back-to-materias, .add-student-button {
+            background-color: var(--mustard-color); 
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s, transform 0.1s;
+            white-space: nowrap; 
+        }
+        .guardar-button {
+            background-color: var(--secondary-color) !important;
+        }
+        .add-student-button {
+            background-color: var(--docente-color) !important;
+            margin-right: 0.5rem;
+        }
+
+        .materia-action-button:hover, #back-to-materias:hover, .add-student-button:hover {
+            background-color: #b45309; 
+            transform: translateY(-1px);
+        }
+        .add-student-button:hover {
+            background-color: #2563eb !important;
+        }
+        
+        #back-to-materias {
+            margin-bottom: 1.5rem;
+            display: inline-block;
+        }
+
+        /* Modal y Media Queries se mantienen sin cambios mayores */
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7); 
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg); 
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: var(--danger-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-content label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            text-align: left;
+        }
+        .modal-content input[type="text"], 
+        .modal-content input[type="password"],
+        .modal-content select,
+        .modal-content input[type="number"] { /* Añadido input[type="number"] */
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        .modal-content button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        #login-message, #add-student-message {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .materia-table {
+                max-width: 100%;
+            }
+            .academic-table th, .academic-table td {
+                padding: 0.5rem;
+            }
+            .academic-table input[type="number"] {
+                width: 50px; /* Reducir en móvil */
+            }
+            .dashboard-container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e5e7eb;
+                border-radius: 1rem 1rem 0 0;
+            }
+            .dashboard-main-content {
+                padding: 1rem;
+            }
+        }
+        
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">Sistema Académico</div>
+        <ul class="nav-links">
+            <li><a href="#" id="nav-login">Inicio de Sesión</a></li>
+            <li id="nav-logout-item" style="display:none;"><a href="#" id="nav-logout">Salir</a></li>
+        </ul>
+    </nav>
+
+    <main id="contenido-principal">
+        <div class="content-card" id="main-content-area">
+            <!-- El contenido se inyecta aquí mediante JavaScript --></div>
+    </main>
+
+    <!-- Modales -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal(loginModal)">&times;</span>
+            <h2>Iniciar Sesión</h2>
+            <form id="login-form">
+                <label for="username">Usuario:</label>
+                <input type="text" id="username" required><br>
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" required><br>
+                <button type="submit">Acceder</button>
+                <p id="login-message" style="color: var(--danger-color);"></p>
+            </form>
+        </div>
+    </div>
+
+    <div id="admin-config-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 1.5rem;">Configuración de Administrador</h2>
+            <p>Selecciona el turno y la carrera para continuar:</p>
+            
+            <label for="turno-select">Turno:</label>
+            <select id="turno-select">
+                <option value="manana">Mañana</option>
+                <option value="tarde">Tarde</option>
+                <option value="noche">Noche</option>
+            </select>
+
+            <label for="carrera-select" style="margin-top: 1rem;">Carrera:</label>
+            <select id="carrera-select">
+                <option value="gastronomia">Gastronomía</option>
+                <option value="contabilidad">Contabilidad</option>
+                <option value="sistemas-informaticos">Sistemas Informáticos</option>
+            </select>
+            
+            <button id="confirm-admin-selection">Aceptar</button>
+        </div>
+    </div>
+    
+    <!-- Nuevo Modal para Agregar Estudiante -->
+    <div id="add-student-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal(document.getElementById('add-student-modal'))">&times;</span>
+            <h2 style="margin-bottom: 1.5rem;">Agregar Nuevo Estudiante</h2>
+            <form id="add-student-form">
+                <label for="new-student-id">ID Estudiante (Numérico):</label>
+                <input type="number" id="new-student-id" required min="1000" placeholder="Ej: 1005">
+                
+                <label for="new-student-name">Nombre Completo:</label>
+                <input type="text" id="new-student-name" required placeholder="Ej: Maria Pérez">
+                
+                <button type="submit">Registrar Estudiante</button>
+                <p id="add-student-message" style="margin-top: 1rem; text-align: center; color: var(--danger-color);"></p>
+            </form>
+        </div>
+    </div>
+
+    
+    <script>
+        const navLogin = document.getElementById('nav-login');
+        const navLogoutItem = document.getElementById('nav-logout-item');
+        const navLogout = document.getElementById('nav-logout');
+        
+        const mainContentArea = document.getElementById('main-content-area');
+        
+        const loginModal = document.getElementById('login-modal');
+        const loginForm = document.getElementById('login-form');
+        const loginMessage = document.getElementById('login-message');
+        // const closeLoginModal = loginModal.querySelector('.close-button'); // Removido, usando onclick inline
+        const adminConfigModal = document.getElementById('admin-config-modal');
+        const confirmAdminSelectionBtn = document.getElementById('confirm-admin-selection');
+        const addStudentModal = document.getElementById('add-student-modal'); // Nuevo
+
+        // Elementos del modal de agregar estudiante
+        const addStudentForm = document.getElementById('add-student-form');
+        const addStudentMessage = document.getElementById('add-student-message');
+        
+        let loggedInUserRole = null;
+        let loggedInUserId = null; 
+        let currentView = 'home'; 
+        let adminSettings = { turno: '', carrera: '' };
+        let docenteSettings = { materia: '', codigo: '' }; 
+
+        // --- Funciones para manejar Modales ---
+        function openModal(modal) {
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        }
+        
+        function closeModal(modal) {
+            if (modal) {
+                modal.style.display = 'none';
+                // Limpiar mensajes al cerrar (opcional)
+                if (modal.id === 'add-student-modal') {
+                    addStudentMessage.textContent = '';
+                    addStudentForm.reset();
+                }
+            }
+        }
+        
+        // Listener para cerrar modales al hacer click fuera
+        window.addEventListener('click', (event) => {
+            if (event.target == loginModal) {
+                closeModal(loginModal);
+            }
+            if (event.target == addStudentModal) {
+                closeModal(addStudentModal);
+            }
+            // Admin modal no se cierra con click fuera para forzar la selección.
+        });
+
+        // Materias disponibles
+        const MATERIAS_LIST = [
+            { codigo: 'DPW-302', nombre: 'Desarrollo Web Progresivo' },
+            { codigo: 'GMC-303', nombre: 'Gestión de Mantenimiento' },
+            { codigo: 'BDD-308', nombre: 'Bases de Datos Avanzadas' },
+            { codigo: 'PDM-307', nombre: 'Programación Móvil' },
+            { codigo: 'ADS-306', nombre: 'Análisis y Diseño' },
+            { codigo: 'TMG-305', nombre: 'Taller de Monografía' },
+            { codigo: 'RDC-304', nombre: 'Redes de Comunicación' }
+        ];
+
+        // Se usa la lista de materias como la fuente para el Docente
+        const DOCENTE_MATERIAS = MATERIAS_LIST;
+        
+        // Datos de notas consolidadas (Simulación Multi-Materia)
+        // Cada objeto representa las notas de un alumno en UNA MATERIA
+        const STUDENT_NOTES = [
+            // Notas de Ana Gómez (1001)
+            { id: '1001', codigo: 'DPW-302', trimestre1: 66, trimestre2: 80, trimestre3: 90 },
+            { id: '1001', codigo: 'GMC-303', trimestre1: 75, trimestre2: 78, trimestre3: 82 },
+            { id: '1001', codigo: 'BDD-308', trimestre1: 88, trimestre2: 90, trimestre3: 95 },
+            
+            // Notas de Carlos Ruiz (1002)
+            { id: '1002', codigo: 'DPW-302', trimestre1: 50, trimestre2: 58, trimestre3: 57 },
+            { id: '1002', codigo: 'GMC-303', trimestre1: 62, trimestre2: 65, trimestre3: 70 },
+            { id: '1002', codigo: 'BDD-308', trimestre1: 45, trimestre2: 50, trimestre3: 40 },
+
+            // Notas de Elisa Soto (1003)
+            { id: '1003', codigo: 'DPW-302', trimestre1: 95, trimestre2: 98, trimestre3: 99 },
+            { id: '1003', codigo: 'GMC-303', trimestre1: 85, trimestre2: 88, trimestre3: 89 },
+            { id: '1003', codigo: 'BDD-308', trimestre1: 90, trimestre2: 92, trimestre3: 93 },
+
+            // Notas de Jhon Doe (1004) - El estudiante de prueba
+            { id: '1004', codigo: 'DPW-302', trimestre1: 70, trimestre2: 75, trimestre3: 80 },
+            { id: '1004', codigo: 'PDM-307', trimestre1: 80, trimestre2: 85, trimestre3: 90 },
+            { id: '1004', codigo: 'ADS-306', trimestre1: 55, trimestre2: 60, trimestre3: 65 },
+            { id: '1004', codigo: 'RDC-304', trimestre1: 90, trimestre2: 92, trimestre3: 94 },
+        ];
+        
+        // Lista de alumnos completa (usada por el docente)
+        const ALL_ALUMNOS = [
+            { id: '1001', nombre: 'Ana Gómez' },
+            { id: '1002', nombre: 'Carlos Ruiz' },
+            { id: '1003', nombre: 'Elisa Soto' },
+            { id: '1004', nombre: 'Jhon Doe' },
+        ];
+
+
+        // Definición de roles y credenciales (JHON asociado al ID 1004)
+        const USERS = {
+            'DIREC': { password: 'DIREC324', role: 'Administrador' },
+            'DOC': { password: 'DOC324', role: 'Docente' },
+            'JHON': { password: 'JHON324', role: 'Estudiante', studentId: '1004' } 
+        };
+
+        // --- Funciones de Utilidad ---
+
+        function getMateriaNombre(codigo) {
+            const materia = MATERIAS_LIST.find(m => m.codigo === codigo);
+            return materia ? materia.nombre : 'Materia Desconocida';
+        }
+
+        function calcularNotaFinal(nota) {
+            // Calcula el promedio simple de los tres trimestres
+            const total = nota.trimestre1 + nota.trimestre2 + nota.trimestre3;
+            const notaFinal = (total / 3).toFixed(2); 
+            const estado = notaFinal >= 60 ? 'Aprobado' : 'Reprobado';
+            return { notaFinal, estado };
+        }
+        
+        /**
+         * Simula la adición de un nuevo estudiante a las estructuras de datos.
+         * @param {string} studentId 
+         * @param {string} studentName 
+         * @param {string} currentMateriaCode
+         */
+        function agregarEstudiante(studentId, studentName, currentMateriaCode) {
+            // 1. Añadir a la lista de alumnos si no existe
+            const existingAlumno = ALL_ALUMNOS.find(a => a.id === studentId);
+            if (!existingAlumno) {
+                ALL_ALUMNOS.push({ id: studentId, nombre: studentName });
+            }
+            
+            // 2. Añadir la entrada de nota para la materia actual (inicia con 0)
+            const existingNote = STUDENT_NOTES.find(n => n.id === studentId && n.codigo === currentMateriaCode);
+            if (!existingNote) {
+                STUDENT_NOTES.push({ 
+                    id: studentId, 
+                    codigo: currentMateriaCode, 
+                    trimestre1: 0, 
+                    trimestre2: 0, 
+                    trimestre3: 0 
+                });
+                return true; // Éxito
+            } else {
+                return false; // Estudiante ya tenía nota para esta materia
+            }
+        }
+
+
+        // --- Lógica de Gestión de Notas (Docente) ---
+
+        window.actualizarNota = function(element, studentId, codigoMateria, trimester) {
+            // Busca la nota específica en la lista global
+            const nota = STUDENT_NOTES.find(n => n.id === studentId && n.codigo === codigoMateria);
+            if (!nota) return;
+
+            let value = Math.max(0, Math.min(100, parseInt(element.value) || 0));
+            element.value = value; 
+            
+            // Actualiza el valor en el objeto de datos
+            nota[trimester] = value; 
+            
+            // Recalcula y actualiza la UI
+            const { notaFinal, estado } = calcularNotaFinal(nota);
+            
+            const notaFinalElement = document.getElementById(`final-nota-${studentId}`);
+            const estadoElement = document.getElementById(`final-estado-${studentId}`);
+            
+            if (notaFinalElement) {
+                notaFinalElement.textContent = notaFinal;
+                notaFinalElement.style.color = estado === 'Aprobado' ? 'var(--secondary-color)' : 'var(--danger-color)';
+            }
+            if (estadoElement) {
+                estadoElement.textContent = estado;
+                estadoElement.style.color = estado === 'Aprobado' ? 'var(--secondary-color)' : 'var(--danger-color)';
+            }
+        }
+        
+        window.guardarNotas = function() {
+             // Usamos una función simple en lugar de alert()
+             showTemporaryMessage(`Notas para ${docenteSettings.materia} guardadas exitosamente.`, 'var(--secondary-color)');
+        }
+
+        window.showTemporaryMessage = function(message, color) {
+             const messageBox = document.createElement('div');
+             messageBox.textContent = message;
+             messageBox.style.cssText = `
+                 position: fixed; top: 20px; right: 20px; background-color: ${color};
+                 color: white; padding: 15px 25px; border-radius: 8px; z-index: 1000;
+                 box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: opacity 0.5s;
+             `;
+             document.body.appendChild(messageBox);
+             setTimeout(() => {
+                 messageBox.style.opacity = '0';
+                 setTimeout(() => messageBox.remove(), 500);
+             }, 3000);
+        }
+        
+        // Listener para el formulario de agregar estudiante
+        addStudentForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const studentId = document.getElementById('new-student-id').value.trim();
+            const studentName = document.getElementById('new-student-name').value.trim();
+            const currentMateriaCode = docenteSettings.codigo;
+            
+            if (!studentId || !studentName) {
+                addStudentMessage.textContent = 'Por favor, complete todos los campos.';
+                return;
+            }
+            
+            // 1. Validar que el ID no exista en la materia actual (para evitar duplicados)
+            const existingNote = STUDENT_NOTES.find(n => n.id === studentId && n.codigo === currentMateriaCode);
+            
+            if (existingNote) {
+                addStudentMessage.textContent = `Error: El estudiante ID ${studentId} ya tiene notas en ${docenteSettings.materia}.`;
+                return;
+            }
+
+            // 2. Agregar el estudiante
+            agregarEstudiante(studentId, studentName, currentMateriaCode);
+
+            // 3. Mostrar mensaje de éxito y recargar la vista de gestión
+            showTemporaryMessage(`Estudiante ${studentName} (${studentId}) agregado a ${docenteSettings.materia}.`, 'var(--secondary-color)');
+            closeModal(addStudentModal);
+            renderDocenteGestionNotas();
+        });
+
+
+        // --- VISTAS ESPECÍFICAS ---
+
+        function renderEstudianteNotas() {
+            currentView = 'estudiante-notas';
+            mainContentArea.className = 'dashboard-main-content'; // Usar estilo de contenido grande
+            
+            // 1. Obtener todas las notas del estudiante logeado
+            const notasEstudiante = STUDENT_NOTES
+                .filter(nota => nota.id === loggedInUserId)
+                .map(nota => ({
+                    ...nota,
+                    ...calcularNotaFinal(nota),
+                    nombreMateria: getMateriaNombre(nota.codigo) // Añadir nombre
+                }));
+            
+            const alumnoInfo = ALL_ALUMNOS.find(a => a.id === loggedInUserId);
+            const nombreAlumno = alumnoInfo ? alumnoInfo.nombre : 'Estudiante';
+            
+            let htmlContent = `
+                <h2 style="font-size: 1.75rem; color: var(--estudiante-color); margin-bottom: 0.5rem;">Mi Reporte de Notas</h2>
+                <h3 style="font-size: 1.25rem; font-weight: 500; margin-top: 0; color: var(--text-color);">
+                    ${nombreAlumno} (**ID: ${loggedInUserId}**)
+                </h3>
+                
+                <p style="text-align: left; margin-top: 1.5rem; color: #6b7280; font-style: italic;">
+                    Nota mínima de aprobación: 60 (Escala 0-100).
+                </p>
+
+                <table class="academic-table estudiante-table" style="max-width: 100%; margin-left: 0; margin-right: auto;">
+                    <thead>
+                        <tr>
+                            <th>Materia (Código)</th>
+                            <th>1er Trimestre</th>
+                            <th>2do Trimestre</th>
+                            <th>3ro Trimestre</th>
+                            <th>Nota Final</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            if (notasEstudiante.length === 0) {
+                 htmlContent += `<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No se encontraron notas registradas.</td></tr>`;
+            } else {
+                notasEstudiante.forEach(nota => {
+                    htmlContent += `
+                        <tr>
+                            <td style="text-align: left; font-weight: 600;">
+                                ${nota.nombreMateria} (${nota.codigo})
+                            </td>
+                            <td>${nota.trimestre1}</td>
+                            <td>${nota.trimestre2}</td>
+                            <td>${nota.trimestre3}</td>
+                            <td style="font-weight: 700; color: ${nota.estado === 'Aprobado' ? 'var(--secondary-color)' : 'var(--danger-color)'};">
+                                ${nota.notaFinal}
+                            </td>
+                            <td style="font-weight: 700; color: ${nota.estado === 'Aprobado' ? 'var(--secondary-color)' : 'var(--danger-color)'};">
+                                ${nota.estado}
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            htmlContent += `
+                    </tbody>
+                </table>
+            `;
+
+            mainContentArea.innerHTML = htmlContent;
+        }
+
+        function renderDocenteGestionNotas() {
+            currentView = 'docente-gestion';
+            mainContentArea.className = 'dashboard-view'; 
+            
+            const { materia, codigo } = docenteSettings;
+            
+            // 1. Obtener todos los alumnos y sus datos.
+            // 2. Filtrar las notas de la materia actual.
+            const notasMateria = STUDENT_NOTES.filter(n => n.codigo === codigo);
+            
+            // 3. Crear una lista de alumnos fusionada con la nota de esta materia.
+            // Aseguramos que solo mostramos alumnos que ya tienen una nota registrada para esta materia
+            // O que al menos están en la lista global de alumnos (para fines de simulación).
+            
+            // Fusionar ALL_ALUMNOS con notas que tienen el código de materia actual
+            const alumnosConNotas = ALL_ALUMNOS
+                .filter(alumno => notasMateria.some(nota => nota.id === alumno.id)) // Solo alumnos con nota en esta materia
+                .map(alumno => {
+                    let nota = notasMateria.find(n => n.id === alumno.id) || 
+                               { trimestre1: 0, trimestre2: 0, trimestre3: 0 }; 
+                    
+                    return { 
+                        ...alumno, 
+                        ...nota,
+                        ...calcularNotaFinal(nota)
+                    };
+                });
+
+
+            let htmlContent = `
+                <button id="back-to-materias">← Volver al listado de Materias</button>
+
+                <h2 style="font-size: 1.75rem; color: var(--docente-color); margin-bottom: 0.5rem;">Gestión de Notas</h2>
+                <h3 style="font-size: 1.25rem; font-weight: 500; margin-top: 0; color: var(--text-color);">
+                    ${materia} (**${codigo}**)
+                </h3>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                    <div>
+                        <button class="add-student-button" onclick="openModal(document.getElementById('add-student-modal'))">
+                            + Agregar Estudiante
+                        </button>
+                    </div>
+                    <p style="color: #6b7280; font-style: italic; margin: 0;">Nota mínima de aprobación: 60 (Escala 0-100)</p>
+                </div>
+                <p style="text-align: left; color: #1f2937; font-weight: 600; margin-top: 1rem;">
+                    La Nota Final y el Estado se actualizan automáticamente al cambiar las notas de los trimestres.
+                </p>
+
+                <table class="academic-table">
+                    <thead>
+                        <tr>
+                            <th>ID Estudiante</th>
+                            <th>Nombre Completo</th>
+                            <th>1er Trimestre</th>
+                            <th>2do Trimestre</th>
+                            <th>3ro Trimestre</th>
+                            <th>Nota Final</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            alumnosConNotas.forEach((alumno) => {
+                htmlContent += `
+                    <tr>
+                        <td style="font-weight: 600;">${alumno.id}</td>
+                        <td>${alumno.nombre}</td>
+                        <td>
+                            <input type="number" 
+                                   id="nota-${alumno.id}-trimestre1"
+                                   value="${alumno.trimestre1}" 
+                                   min="0" max="100" 
+                                   onchange="actualizarNota(this, '${alumno.id}', '${codigo}', 'trimestre1')"
+                                   onblur="actualizarNota(this, '${alumno.id}', '${codigo}', 'trimestre1')">
+                        </td>
+                        <td>
+                            <input type="number" 
+                                   id="nota-${alumno.id}-trimestre2"
+                                   value="${alumno.trimestre2}" 
+                                   min="0" max="100" 
+                                   onchange="actualizarNota(this, '${alumno.id}', '${codigo}', 'trimestre2')"
+                                   onblur="actualizarNota(this, '${alumno.id}', '${codigo}', 'trimestre2')">
+                        </td>
+                        <td>
+                            <input type="number" 
+                                   id="nota-${alumno.id}-trimestre3"
+                                   value="${alumno.trimestre3}" 
+                                   min="0" max="100" 
+                                   onchange="actualizarNota(this, '${alumno.id}', '${codigo}', 'trimestre3')"
+                                   onblur="actualizarNota(this, '${alumno.id}', '${codigo}', 'trimestre3')">
+                        </td>
+                        <td id="final-nota-${alumno.id}" 
+                            style="font-weight: 700; color: ${alumno.estado === 'Aprobado' ? 'var(--secondary-color)' : 'var(--danger-color)'};">
+                            ${alumno.notaFinal}
+                        </td>
+                        <td id="final-estado-${alumno.id}" 
+                            style="font-weight: 600; color: ${alumno.estado === 'Aprobado' ? 'var(--secondary-color)' : 'var(--danger-color)'};">
+                            ${alumno.estado}
+                        </td>
+                        <td>
+                            <span style="color: #6b7280; font-size: 0.8rem;">Listo</span>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            htmlContent += `
+                    </tbody>
+                </table>
+                <div style="text-align: right; margin-top: 2rem;">
+                    <button class="materia-action-button guardar-button" onclick="guardarNotas()">
+                        Guardar Todas las Notas
+                    </button>
+                </div>
+            `;
+
+            mainContentArea.innerHTML = htmlContent;
+
+            // Listener para el botón de volver
+            document.getElementById('back-to-materias').addEventListener('click', () => {
+                currentView = 'dashboard';
+                renderBienvenidaContent();
+            });
+        }
+
+
+        // --- Manejo del Contenido Principal y Dashboards ---
+
+        function renderBienvenidaContent() {
+            
+            if (loggedInUserRole === 'Estudiante') {
+                 // Estudiante: Redirigir directamente a la vista de notas al iniciar sesión
+                 renderEstudianteNotas();
+                 return; 
+            }
+
+            let htmlContent = ''; 
+            
+            if (!loggedInUserRole) {
+                // Contenido de Bienvenida sin autenticar (Diseño Centrado)
+                mainContentArea.className = 'content-card centered-content welcome-background';
+                currentView = 'home';
+                
+                htmlContent += `<h1 style="font-size: 2.5rem; font-weight: 800; margin-top: 1rem; color: white;">INSTITUTO GARCON</h1>`; 
+                htmlContent += `<p style="font-size: 1.5rem; font-weight: 600; margin-top: 0.5rem; color: white; text-align: center;">Aprender, Crecer y Conquistar el Futuro</p>`;
+                htmlContent += `<p style="font-size: 1.1rem; color: white; margin-bottom: 0; margin-top: 1rem; font-weight: 500; text-align: center;">Inicie sesión con su cuenta institucional para acceder.</p>`;
+                
+            } else {
+                
+                // Dashboard general para roles autenticados (Admin y Docente)
+                currentView = 'dashboard';
+                
+                let dashboardHtml = `<h1 style="color: var(--guindo-color);">INSTITUTO GARCON</h1>`;
+                dashboardHtml += `<p>¡Hola, **${loggedInUserRole}**! Aquí tienes tus opciones:</p>`;
+                dashboardHtml += `<h2 style="font-size: 1.5rem; margin-top: 2rem; font-weight: 600;">Panel de ${loggedInUserRole}</h2>`;
+
+                if (loggedInUserRole === 'Administrador') {
+                    // Diseño de Administrador: Centrado con botones/lista
+                    mainContentArea.className = 'content-card centered-content';
+                    htmlContent += dashboardHtml;
+                    htmlContent += `
+                        <div class="dashboard-buttons" style="max-width: 400px; margin: 1.5rem auto;">
+                            <a href="#" class="admin-button-link">MATERIAS (Garantía de Calidad)</a>
+                            <a href="#" class="admin-button-link">DOCENTES (Gestión de Personal)</a>
+                        </div>
+                    `;
+                    if (adminSettings.carrera) {
+                        const turnoDisplay = adminSettings.turno.charAt(0).toUpperCase() + adminSettings.turno.slice(1);
+                        const carreraDisplay = adminSettings.carrera.charAt(0).toUpperCase() + adminSettings.carrera.slice(1);
+                        htmlContent += `<p style="margin-top: 1rem; font-weight: 500;">**Configuración Actual:** Turno: ${turnoDisplay}, Carrera: ${carreraDisplay}</p>`;
+                    }
+                } else if (loggedInUserRole === 'Docente') {
+                    // Diseño de Docente: Lista de MATERIAS en una tabla
+                    mainContentArea.className = 'content-card centered-content';
+                    htmlContent += dashboardHtml;
+                    htmlContent += `<p style="margin-top: 1rem; font-weight: 500;">Selecciona la materia que deseas gestionar:</p>`;
+                    
+                    let materiaTableHtml = `
+                        <table class="academic-table materia-table">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Materia</th>
+                                    <th>Opción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    DOCENTE_MATERIAS.forEach((materia) => {
+                        materiaTableHtml += `
+                            <tr>
+                                <td style="font-weight: 600; color: var(--docente-color);">${materia.codigo}</td>
+                                <td>${materia.nombre}</td>
+                                <td>
+                                    <button class="materia-action-button" 
+                                            data-codigo="${materia.codigo}" 
+                                            data-nombre="${materia.nombre}">
+                                        Gestionar
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    
+                    materiaTableHtml += '</tbody></table>';
+                    
+                    htmlContent += materiaTableHtml;
+                }
+            }
+
+            mainContentArea.innerHTML = htmlContent;
+
+            // --- Agregar Event Listeners DESPUÉS de renderizar el contenido ---
+            if (loggedInUserRole === 'Docente') {
+                const materiaButtons = mainContentArea.querySelectorAll('.materia-action-button');
+                materiaButtons.forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        docenteSettings.codigo = event.target.getAttribute('data-codigo');
+                        docenteSettings.materia = event.target.getAttribute('data-nombre');
+                        renderDocenteGestionNotas();
+                    });
+                });
+            }
+        }
+
+        // --- Lógica de Autenticación y Modales (Se mantiene) ---
+
+        function handleLogin(role, studentId = null) {
+            loggedInUserRole = role;
+            loggedInUserId = studentId; 
+            loginMessage.textContent = '';
+            closeModal(loginModal);
+            
+            navLogin.parentElement.style.display = 'none';
+            navLogoutItem.style.display = 'list-item';
+            
+            if (role === 'Administrador') {
+                openModal(adminConfigModal);
+            }
+            
+            renderBienvenidaContent();
+        }
+
+        loginForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value.trim().toUpperCase();
+            const password = document.getElementById('password').value;
+            
+            if (USERS[username] && USERS[username].password === password) {
+                const user = USERS[username];
+                handleLogin(user.role, user.studentId); 
+            } else {
+                loginMessage.textContent = 'Credenciales incorrectas. Intenta de nuevo.';
+            }
+        });
+
+        navLogout.addEventListener('click', function(event) {
+            event.preventDefault();
+            loggedInUserRole = null;
+            loggedInUserId = null;
+            currentView = 'home';
+            adminSettings = { turno: '', carrera: '' }; 
+            docenteSettings = { materia: '', codigo: '' }; 
+            
+            navLogin.parentElement.style.display = 'list-item';
+            navLogoutItem.style.display = 'none';
+            
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+
+            renderBienvenidaContent();
+        });
+
+        confirmAdminSelectionBtn.addEventListener('click', function() {
+            adminSettings.turno = document.getElementById('turno-select').value;
+            adminSettings.carrera = document.getElementById('carrera-select').value;
+            
+            closeModal(adminConfigModal);
+            
+            renderBienvenidaContent(); 
+        });
+
+        navLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginMessage.textContent = '';
+            openModal(loginModal);
+        });
+
+        document.addEventListener('DOMContentLoaded', renderBienvenidaContent);
+
+    </script>
+</body>
+</html>
